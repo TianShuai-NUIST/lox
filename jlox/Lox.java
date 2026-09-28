@@ -9,8 +9,10 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+  // 错误标识, 在调用error函数输出错误的时候自动设置
   static boolean hadError = false;
 
+  // 主函数 根据参数判断执行模式
   public static void main(String[] args) throws IOException {
     if (args.length > 1) {
       System.out.println("Usage: jlox [script]");
@@ -22,6 +24,7 @@ public class Lox {
     }
   }
 
+  // 单个参数, 认为参数是文件名
   private static void runFile(String path) throws IOException {
     byte[] bytes = Files.readAllBytes(Paths.get(path));
     run(new String(bytes, Charset.defaultCharset()));
@@ -29,6 +32,7 @@ public class Lox {
     if(hadError) System.exit(65);
   }
 
+  // 没有参数, 交互式运行
   private static void runPrompt() throws IOException {
     InputStreamReader input = new InputStreamReader(System.in);
     BufferedReader reader = new BufferedReader(input);
@@ -42,19 +46,23 @@ public class Lox {
     }
   }
 
+  // 脚本统一执行入口, 无论什么模式都是对这个函数的包装
   private static void run(String source){
     Scanner scanner = new Scanner(source);
     List<Token> tokens = scanner.scanTokens();
 
+    // TODO 处理Token, 现在只是输出Token
     for(Token token : tokens){
       System.out.println(token);
     }
   }
 
+  // 触发错误, 供外部调用的函数
   static void error(int line, String message){
     report(line, "", message);
   }
 
+  // 报告错误, 私有函数, 内部使用.
   private static void report(int line, String where, String message){
     System.err.println(
         "[line " + line + "] Error" + where + ": " + message);
