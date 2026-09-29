@@ -42,6 +42,7 @@ public class Lox {
       String line = reader.readLine();
       if(line == null) break;
       run(line);
+      // 每次成功运行, 都把错误设置为False
       hadError = false;
     }
   }

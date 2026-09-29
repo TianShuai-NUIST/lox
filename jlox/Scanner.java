@@ -85,6 +85,11 @@ class Scanner {
 
     // 复合操作符 (!=, ==, <=, >=)
     // TODO 尚未理解match的作用
+    // TODO: 解答, 这个问题体现在没有理解current变量和advance函数的作用
+    // 对于advance函数而言, 他会读取当前的字符, 返回, 同时current指向下一个字符
+    // 这意味着, current现在指向的字符是什么, 不知道.
+    // match就是做这个的, 他来看看现在的字符是不是需要的? 
+    // 如果是, 那么就步进(处理过了), 反之不步进
       case '!': 
         // 要么是不等于逻辑运算, 要么是逻辑反置
         addToken(match('=') ? BANG_EQUAL : BANG);
@@ -108,6 +113,8 @@ class Scanner {
         // 就都是注释, 所以可以一直步进
         if(match('/')){
           while(peek() != '\n' && !isAtEnd()) advance();
+        }else if(match('*')){
+          blockComment();
         }else{
           // 否则说明就是一个简单的除号
           addToken(SLASH);
@@ -139,6 +146,20 @@ class Scanner {
         }
         break;
     }
+  }
+
+  private void blockComment(){
+    int startLine = line;
+    while(!isAtEnd()){
+      if(peek() == '*' && peekNext() == '/'){
+        advance(); // '*'
+        advance(); // '/'
+        return;
+      }
+      if(peek() == '\n') line++;
+      advance();
+    }
+    Lox.error(startLine, "Unterminated Block Comment.");
   }
 
   // 判断是不是保留字
@@ -211,6 +232,7 @@ class Scanner {
     advance();
 
     // TODO 不理解, 这里的Start就没有变过, 难道是一直在1开始? 这明显不合理
+    // TODO: 答案是, 在scanTokens函数的开始, 把start设置成了current;
     String value = source.substring(start + 1, current - 1);
     addToken(STRING, value);
   }
@@ -236,7 +258,8 @@ class Scanner {
     return source.charAt(current++);
   }
 
-  // 封装, 函数重载
+  // 封装, 函数重载, 部分函数不需要设置值, 所以可以使用这个函数
+  // 对于需要的, 会调用下面的函数
   private void addToken(TokenType type){
     addToken(type, null);
   }
