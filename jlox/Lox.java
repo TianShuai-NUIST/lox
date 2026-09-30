@@ -52,15 +52,25 @@ public class Lox {
     Scanner scanner = new Scanner(source);
     List<Token> tokens = scanner.scanTokens();
 
-    // TODO 处理Token, 现在只是输出Token
-    for(Token token : tokens){
-      System.out.println(token);
-    }
+    Parser parse = new Parser(tokens);
+    Expr expression = parse.parse();
+
+    if(hadError) return;
+
+    System.out.println(new AstPrinter().print(expression));
   }
 
   // 触发错误, 供外部调用的函数
   static void error(int line, String message){
     report(line, "", message);
+  }
+
+  static void error(Token token, String message){
+    if(token.type == TokenType.EOF) {
+      report(token.line, " at end", message);
+    }else{
+      report(token.line, " at '" + token.lexeme + "'", message);
+    }
   }
 
   // 报告错误, 私有函数, 内部使用.
