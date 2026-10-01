@@ -9,8 +9,12 @@ import java.nio.file.Paths;
 import java.util.List;
 
 public class Lox {
+
+  private static final Interpreter interpreter = new Interpreter();
+
   // 错误标识, 在调用error函数输出错误的时候自动设置
   static boolean hadError = false;
+  static boolean hadRuntimeError = false;
 
   // 主函数 根据参数判断执行模式
   public static void main(String[] args) throws IOException {
@@ -30,6 +34,7 @@ public class Lox {
     run(new String(bytes, Charset.defaultCharset()));
 
     if(hadError) System.exit(65);
+    if(hadRuntimeError) System.exit(70);
   }
 
   // 没有参数, 交互式运行
@@ -57,7 +62,9 @@ public class Lox {
 
     if(hadError) return;
 
-    System.out.println(new AstPrinter().print(expression));
+    // System.out.println(new AstPrinter().print(expression));
+    
+    interpreter.interpret(expression);
   }
 
   // 触发错误, 供外部调用的函数
@@ -71,6 +78,12 @@ public class Lox {
     }else{
       report(token.line, " at '" + token.lexeme + "'", message);
     }
+  }
+
+  static void runtimeError(RuntimeError error) {
+    System.err.println(error.getMessage() + 
+        "\n[line " + error.token.line + "]");
+    hadRuntimeError = true;
   }
 
   // 报告错误, 私有函数, 内部使用.

@@ -1,4 +1,4 @@
-# TODO: [](https://craftinginterpreters.com/representing-code.html)
+# TODO: [6](https://craftinginterpreters.com/evaluating-expressions.html)
 
 # Scanner
 
@@ -29,3 +29,9 @@ java是一个架构语言, 函数是生长出来的, 我在看着本书的时候
 - [访客模式](https://refactoringguru.cn/design-patterns/visitor)
 
 在OOP中实现类似于函数式编程语言的使用体验.
+
+使用这个设计模式的原因在于OOP的编程体验的缺失, 我们有一个表格, 
+
+# Parser Expression
+
+对一个表达式进行解析
