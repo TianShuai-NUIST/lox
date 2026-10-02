@@ -1,6 +1,6 @@
 # TODO: [6](https://craftinginterpreters.com/evaluating-expressions.html)
 
-# Scanner
+# 4. Scanner
 
 ## 框架
 
@@ -22,7 +22,53 @@ Main函数用于分辨执行模式, 文件执行模式或者是命令执行模�
 
 java是一个架构语言, 函数是生长出来的, 我在看着本书的时候, 意识到, 这个作者并不是写好函数内容, 然后再把它独立出去, 封装成一个函数, 而是当作这个这个函数已经存在了, 直接去使用它, 当功能完成之后, 在去补全这些函数. 这点让我受益匪浅.
 
-# AST
+# 5. 表示代码
+
+## BNF
+
+- [巴科斯范式](https://zh.wikipedia.org/zh-cn/巴科斯范式)
+
+BNF是一种上下文无关语法, 用于描述一类形式语言.
+> **递归**是一个好标志, 用于表示定义的语言是上下文无关的.
+> 特别是, 递归非终止符两边都有生成式的递归, 意味着语言不是正则的.
+
+
+### 表达式的定义
+
+```c
+expression -> literal | unary | binary | grouping ;
+// 字面量表达式
+literal    -> NUMBER | STRING | "true" | "false" | "nil" ;
+// 组合
+grouping   -> "(" expression ")" ;
+// 一元表达式
+unary      -> ( "-" | "!" ) expression ;
+// 二元表达式
+binary     -> expression operator expression ;
+// 操作符
+operator   -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/" ;
+```
+
+但是这种方式定义的表达式, 他不具备运算符的优先级. 但是对于一个语法体系的构成是非常清楚的.
+
+```c
+// 表达式
+expression -> equality ;
+// 相等
+equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
+// 比较
+comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+// 加减运算
+term       -> factor ( ( "-" | "+" ) factor )* ;
+// 乘除运算
+factor     -> unary ( ( "/" | "*" ) unary )* ;
+// 一元运算符
+unary      -> ( "!" | "-" ) unary | primary ;
+// 最低级运算
+primary    -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
+```
+
+这种方式构建了具有优先级的表达式, 我们注意到, 越早被表达式解释的, 这往往意味着他的优先级更低.
 
 ## 访客模式
 
@@ -32,6 +78,10 @@ java是一个架构语言, 函数是生长出来的, 我在看着本书的时候
 
 使用这个设计模式的原因在于OOP的编程体验的缺失, 我们有一个表格, 
 
-# Parser Expression
+# 6. 解析表达式
 
 对一个表达式进行解析
+
+# 7. 表达式求值
+
+# 8. 表达式和状态

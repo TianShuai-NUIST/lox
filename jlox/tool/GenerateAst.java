@@ -17,17 +17,26 @@ public class GenerateAst{
 
     // 定义抽象语法树
     // Arrays.asList()函数生成一个列表
+    // 生成Expr.java文件
     defineAst(outputDir, "Expr", Arrays.asList(
-          "Binary : Expr left, Token operator, Expr right",
+          "Binary   : Expr left, Token operator, Expr right",
           "Grouping : Expr expression",
-          "Literal : Object value",
-          "Unary : Token operator, Expr right"));
+          "Literal  : Object value",
+          "Unary    : Token operator, Expr right",
+          "Variable : Token name",
+          ));
+
+    // 生成Stmt.java文件
+    defineAst(outputDir, "Stmt", Arrays.asList(
+          "Expression : Expr expression",
+          "Print      : Expr expression",
+          "Var        : Token name, Expr initializer",
+          ));
   }
 
   // 生成一个抽象语法树
   private static void defineAst(
-    String outputDir, String baseName, List<String> types)
-    throws IOException {
+    String outputDir, String baseName, List<String> types) throws IOException {
 
     String path = outputDir + '/' + baseName + ".java";
     PrintWriter writer = new PrintWriter(path, "UTF-8");
@@ -39,6 +48,11 @@ public class GenerateAst{
     writer.println();
     // 定义抽象类, 要求子类必须实现内部函数(abstract)
     writer.println("abstract class " + baseName + "{");
+    writer.println();
+
+    // 定义访客模式接口, 强制要求子类必须实现他(abstract)
+    writer.println("  abstract <R> R accept(Visitor<R> visitor);");
+    writer.println();
 
     // 生成访客接口
     defineVisitor(writer, baseName, types);
@@ -51,9 +65,6 @@ public class GenerateAst{
       defineType(writer, baseName, className, fields);
       writer.println();
     }
-
-    // 定义访客模式接口, 强制要求子类必须实现他(abstract)
-    writer.println("  abstract <R> R accept(Visitor<R> visitor);");
 
     writer.println("}");
     writer.close();

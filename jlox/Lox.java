@@ -44,6 +44,8 @@ public class Lox {
 
     for(;;){
       System.out.print("> ");
+      // Ctrl-D 发送 EOF
+      // readLine() 函数返回 null
       String line = reader.readLine();
       if(line == null) break;
       run(line);
@@ -54,17 +56,21 @@ public class Lox {
 
   // 脚本统一执行入口, 无论什么模式都是对这个函数的包装
   private static void run(String source){
+    // 源码扫描为Token
     Scanner scanner = new Scanner(source);
     List<Token> tokens = scanner.scanTokens();
 
+    // 解析Tokens到语句
     Parser parse = new Parser(tokens);
-    Expr expression = parse.parse();
+    List<Stmt> statements =  parse.parse();
 
     if(hadError) return;
 
+    for(Token token : tokens){
+      System.out.println("[Debug]: "+ token);
+    }
     // System.out.println(new AstPrinter().print(expression));
-    
-    interpreter.interpret(expression);
+    interpreter.interpret(statements);
   }
 
   // 触发错误, 供外部调用的函数
@@ -72,6 +78,7 @@ public class Lox {
     report(line, "", message);
   }
 
+  // 触发错误, 依据Token
   static void error(Token token, String message){
     if(token.type == TokenType.EOF) {
       report(token.line, " at end", message);

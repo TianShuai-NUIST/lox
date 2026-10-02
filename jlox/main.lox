@@ -1,3 +1,6 @@
 /* nihc
  * 好久不见
  */
+print "one";
+print true;
+print 2 + 1;
