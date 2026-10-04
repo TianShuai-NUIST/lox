@@ -142,4 +142,9 @@ block          → "{" declaration* "}" ;
 ```
 我们注意到, 我们的语句块是由一个`{}`包裹的语句组, 而里面的语句组是可以没有任何一个语句的.
 
+**父环境子环境切换问题**
 
+```java
+void executeBlock(List<Stmt> statements, Environment environment);
+```
+这里this指针指向的是父环境, 因为是包含当前语句块的Interpreter对象, 而传入的environment是子环境.

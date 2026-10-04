@@ -33,13 +33,17 @@ class Parser {
     return expressionStatement();
   }
 
+  // 语句块解析
   private List<Stmt> block(){
     List<Stmt> statements = new ArrayList<>();
 
+    // 在调用block函数的地方'{'已经被消耗, 所以这里检查'}'.
     while(!check(RIGHT_BRACE) && !isAtEnd()){
+      // 只要不是, 我们就解析一次定义语句
       statements.add(declaration());
     }
 
+    // 消耗'}'
     consume(RIGHT_BRACE, "Expect '}' after block.");
     return statements;
   }
@@ -52,9 +56,13 @@ class Parser {
     return new Stmt.Print(value);
   }
 
+  // 解析定义变量语句
+  // varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
   private Stmt varDeclaration() {
+    // 需要一个标识符来作为变量的名字
     Token name = consume(IDENTIFIER, "Expect variable name.");
 
+    // 默认是没有初始化语句
     Expr initializer = null;
     if(match(EQUAL)) {
       initializer = expression();
@@ -72,6 +80,8 @@ class Parser {
     return new Stmt.Expression(expr);
   }
 
+  // 解析赋值语句
+  // assignment  -> IDENTIFIER "=" assignment | equality ;
   private Expr assignment() {
     Expr expr = equality();
 
@@ -79,6 +89,7 @@ class Parser {
       Token equals = previous();
       Expr value = assignment();
 
+      // 如果表达式是一个变量的话, 那么强强转到变量类型, 并拿到他的name.
       if(expr instanceof Expr.Variable) {
         Token name = ((Expr.Variable)expr).name;
         return new Expr.Assign(name, value);
@@ -168,6 +179,7 @@ class Parser {
       return new Expr.Literal(previous().literal);
     }
 
+    // 如果是一个标识符的话, 说明这个位置是一个变量
     if(match(IDENTIFIER)) {
       return new Expr.Variable(previous());
     }
@@ -195,8 +207,10 @@ class Parser {
     return statements;
   }
 
+  // 解析声明
   private Stmt declaration() {
     try {
+      // var 开头是一个变量声明
       if(match(VAR)) return varDeclaration();
       return statement();
     } catch (ParseError error) {
@@ -220,6 +234,10 @@ class Parser {
     return new ParseError();
   }
 
+  // 错误恢复
+  // 当发生错误的时候, 执行这个方法, 把这个错误的语句丢弃掉.
+  /// **恐慌模式**
+  /// 丢弃所有不安全的字符, 直到开始一个新的语句
   private void synchronize() {
     advance();
 

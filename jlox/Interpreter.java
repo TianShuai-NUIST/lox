@@ -5,8 +5,13 @@ import java.util.List;
 // 解释器类
 // 实现 1. 表达式访客模式的所有类
 //      2. 语句访客模式的所有类
+// 解释一下访客模式的函数是如何调用的, 答案是通过`accept()`调用的
+// 所以会在如下两个情况调用
+//  1. 执行一个语句
+//  2. 对一个语句求值
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
+  // 作用域定义
   private Environment environment = new Environment();
 
   // =========== 表达式访客模式实现 ===========
@@ -43,10 +48,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
         // isTruthy 返回类型一定是Boolean, 所以不需要查
         return !isTruthy(right);
     }
-
     return null;
   }
 
+  // 获取变量的值
   @Override
   public Object visitVariableExpr(Expr.Variable expr) {
     return environment.get(expr.name);
@@ -106,45 +111,66 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return null;
   }
 
+  // 执行赋值语句
+  @Override
+  public Object visitAssignExpr(Expr.Assign expr) {
+    // 先对右值求值
+    Object value = evaluate(expr.value);
+    environment.assign(expr.name, value);
+    return value;
+  }
+
 // =========== 语句访客模式实现 ===========
 
   // 表达式语句
+  // exprStmt    -> expression ";" ;
   @Override
   public Void visitExpressionStmt(Stmt.Expression stmt) {
+    // 表达式语句求值
     evaluate(stmt.expression);
     return null;
   }
 
   // 打印语句
+  // printStmt   -> "print" expression ";" ;
   @Override
   public Void visitPrintStmt(Stmt.Print stmt) {
+    // 打印对象求值
     Object value = evaluate(stmt.expression);
     System.out.println(stringify(value));
     return null;
   }
 
+  // 变量声明语句
+  // varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
   @Override
   public Void visitVarStmt(Stmt.Var stmt) {
     Object value = null;
+    // 初始化器未必有
     if(stmt.initializer != null) {
+      // 有的话求值
       value = evaluate(stmt.initializer);
     }
 
+    // 定义变量
+    /// 调用的是define函数不是assign函数, 二者不同
+    /// 使用一个声明语句的时候, 哪怕上级有这个变量, 我们也会使用新的变量, 也就是**屏蔽**
     environment.define(stmt.name.lexeme, value);
     return null;
   }
 
+  // 语句块
   @Override
-  public Object visitAssignExpr(Expr.Assign expr) {
-    Object value = evaluate(expr.value);
-    environment.assign(expr.name, value);
-
-    return value;
+  public Void visitBlockStmt(Stmt.Block stmt){
+    /// 执行语句, 语句块应该带有当前的上下文, 也就是**环境**
+    /// 另外, 我们应该注意的是, 我们这里传入的环境是**子环境**, 子环境被使用**父环境**初始化了
+    executeBlock(stmt.statements, new Environment(environment));
+    return null;
   }
 
 // =========== 工具函数 ===========
 
-  // 评估函数 (表达式)
+  // 求值函数 (表达式)
   private Object evaluate(Expr expr) {
     // 这里的accept其实是一个递归, accept会调用expr中的子函数
     // expr会被具象化到Expr的子类 随后调用对应的Visitor函数
@@ -153,28 +179,10 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return expr.accept(this);
   }
 
-  // 评估函数 (语句)
+  // 执行函数 (语句)
   private void execute(Stmt stmt) {
     // 同上
     stmt.accept(this);
-  }
-
-  @Override
-  public Void visitBlockStmt(Stmt.Block stmt){
-    executeBlock(stmt.statements, new Environment(environment));
-    return null;
-  }
-
-  void executeBlock(List<Stmt> statements, Environment environment) {
-    Environment previous = this.environment;
-    try {
-      this.environment = environment;
-      for(Stmt statement : statements) {
-        execute(statement);
-      }
-    } finally {
-      this.environment = previous;
-    }
   }
 
   // 判断真假
@@ -199,12 +207,32 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     throw new RuntimeError(operator, "Operand must be numbers.");
   }
 
+  // 执行语句块
+  void executeBlock(List<Stmt> statements, Environment environment) {
+    // 保存父环境
+    /// NOTE: this 指向的是当前的Interpreter对象
+    /// 也就是this.environment指向包含语句块的作用域
+    Environment previous = this.environment;
+    try {
+      // 切换当当前环境(子环境)
+      this.environment = environment;
+      for(Stmt statement : statements) {
+        execute(statement);
+      }
+    } finally {
+      // 切换环境回到父环境
+      this.environment = previous;
+    }
+  }
+
+  // 解释执行语句
   void interpret(List<Stmt> statements) {
     try {
       for (Stmt statement : statements) {
         execute(statement);
       }
     } catch(RuntimeError error) {
+      /// 这里出了错误说明是在运行的时候出的错误, 所以是**运行时错误**
       Lox.runtimeError(error);
     }
   }

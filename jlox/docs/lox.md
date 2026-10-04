@@ -1,24 +1,42 @@
 # Lox 语法表示
 
 ```c
+// 程序
 program     -> declaration* EOF ;
 
+// 声明
 declaration -> varDecl | statement ;
-statement   -> exprStmt | printStmt ;
 
+// 变量声明语句
+varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
+
+// 语句
+statement   -> exprStmt | printStmt | block ;
+// 语句块
+block       -> "{" expression* "}" ;
+// 表达式语句
 exprStmt    -> expression ";" ;
+// 打印语句
 printStmt   -> "print" expression ";" ;
 
-varDecl -> "var" IDENTIFIER ( "=" expression )? ";" ;
-
-
-expression -> assignment ;
-assignment -> IDENTIFIER "=" assignment | equality ;
-equality   -> comparison ( ( "!=" | "==" ) comparison )* ;
-comparison -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
-term       -> factor ( ( "-" | "+" ) factor )* ;
-factor     -> unary ( ( "/" | "*" ) unary )* ;
-unary      -> ( "!" | "-" ) unary | primary ;
-primary    -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;
+// 表达式
+expression  -> assignment ;
+// 赋值
+assignment  -> IDENTIFIER "=" assignment | equality ;
+// 相等
+equality    -> comparison ( ( "!=" | "==" ) comparison )* ;
+// 比较
+comparison  -> term ( ( ">" | ">=" | "<" | "<=" ) term )* ;
+// 加减
+term        -> factor ( ( "-" | "+" ) factor )* ;
+// 乘除
+factor      -> unary ( ( "/" | "*" ) unary )* ;
+// 一元运算符
+unary       -> ( "!" | "-" ) unary | primary ;
+// 基本表达式
+primary     -> NUMBER | STRING // 字面量
+  | "true" | "false" | "nil"     // 三值逻辑
+  | "(" expression ")"           // 表达式
+  | IDENTIFIER ;                 // 标识符
 ```
 
