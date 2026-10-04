@@ -66,9 +66,9 @@ public class Lox {
 
     if(hadError) return;
 
-    for(Token token : tokens){
-      System.out.println("[Debug]: "+ token);
-    }
+    // for(Token token : tokens){
+    //   System.out.println("[Debug]: "+ token);
+    // }
     // System.out.println(new AstPrinter().print(expression));
     interpreter.interpret(statements);
   }

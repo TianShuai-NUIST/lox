@@ -19,18 +19,20 @@ public class GenerateAst{
     // Arrays.asList()函数生成一个列表
     // 生成Expr.java文件
     defineAst(outputDir, "Expr", Arrays.asList(
+          "Assign   : Token name, Expr value",
           "Binary   : Expr left, Token operator, Expr right",
           "Grouping : Expr expression",
           "Literal  : Object value",
           "Unary    : Token operator, Expr right",
-          "Variable : Token name",
+          "Variable : Token name"
           ));
 
     // 生成Stmt.java文件
     defineAst(outputDir, "Stmt", Arrays.asList(
+          "Block      : List<Stmt> statements",
           "Expression : Expr expression",
           "Print      : Expr expression",
-          "Var        : Token name, Expr initializer",
+          "Var        : Token name, Expr initializer"
           ));
   }
 

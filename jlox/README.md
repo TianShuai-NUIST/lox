@@ -85,3 +85,61 @@ primary    -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" ;
 # 7. 表达式求值
 
 # 8. 表达式和状态
+
+定义程序如下
+
+```c
+program        → statement* EOF ;
+
+statement      → exprStmt | printStmt ;
+
+exprStmt       → expression ";" ;
+printStmt      → "print" expression ";" ;
+```
+
+为了引入变量的作用域, 我们不得不修改定义如下
+
+```c
+program        → declaration* EOF ;
+
+declaration    → varDecl 
+               | statement ;
+
+statement      → exprStmt 
+               | printStmt ;
+```
+
+然后我们如下声明一个变量声明的定义
+```c
+varDecl        → "var" IDENTIFIER ( "=" expression )? ";" ;
+```
+
+为了访问变量, 我们需要重新定义基本类型.
+
+```c
+primary        → "true" | "false" | "nil"
+               | NUMBER | STRING
+               | "(" expression ")"
+               | IDENTIFIER ;
+```
+
+现在变量可以被定义, 访问, 但是对于赋值的规则依然不够完善, 我们再次完善赋值的语法.
+
+```c
+expression     → assignment ;
+assignment     → IDENTIFIER "=" assignment
+               | equality ;
+```
+
+现在我们可以添加语句块的语法了, 这样我们的程序就会支持语句块.
+
+```c
+statement      → exprStmt
+               | printStmt
+               | block ;
+
+block          → "{" declaration* "}" ;
+```
+我们注意到, 我们的语句块是由一个`{}`包裹的语句组, 而里面的语句组是可以没有任何一个语句的.
+
+

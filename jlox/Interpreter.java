@@ -7,6 +7,8 @@ import java.util.List;
 //      2. 语句访客模式的所有类
 class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
+  private Environment environment = new Environment();
+
   // =========== 表达式访客模式实现 ===========
 
   // 字面量
@@ -43,6 +45,11 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     return null;
+  }
+
+  @Override
+  public Object visitVariableExpr(Expr.Variable expr) {
+    return environment.get(expr.name);
   }
 
   // 二元表达式
@@ -116,6 +123,25 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return null;
   }
 
+  @Override
+  public Void visitVarStmt(Stmt.Var stmt) {
+    Object value = null;
+    if(stmt.initializer != null) {
+      value = evaluate(stmt.initializer);
+    }
+
+    environment.define(stmt.name.lexeme, value);
+    return null;
+  }
+
+  @Override
+  public Object visitAssignExpr(Expr.Assign expr) {
+    Object value = evaluate(expr.value);
+    environment.assign(expr.name, value);
+
+    return value;
+  }
+
 // =========== 工具函数 ===========
 
   // 评估函数 (表达式)
@@ -131,6 +157,24 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   private void execute(Stmt stmt) {
     // 同上
     stmt.accept(this);
+  }
+
+  @Override
+  public Void visitBlockStmt(Stmt.Block stmt){
+    executeBlock(stmt.statements, new Environment(environment));
+    return null;
+  }
+
+  void executeBlock(List<Stmt> statements, Environment environment) {
+    Environment previous = this.environment;
+    try {
+      this.environment = environment;
+      for(Stmt statement : statements) {
+        execute(statement);
+      }
+    } finally {
+      this.environment = previous;
+    }
   }
 
   // 判断真假
