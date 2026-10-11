@@ -24,3 +24,11 @@ var c = "global c";
 print a;
 print b;
 print c;
+
+var number = 1000;
+
+for(var i = 0; i < number; i = i + 1){
+  if(i * 2 == 10 or i * 10 == 10) {
+    print i;
+  }
+}

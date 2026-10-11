@@ -1,5 +1,3 @@
-# TODO: [6](https://craftinginterpreters.com/evaluating-expressions.html)
-
 # 4. Scanner
 
 ## 框架
@@ -148,3 +146,27 @@ block          → "{" declaration* "}" ;
 void executeBlock(List<Stmt> statements, Environment environment);
 ```
 这里this指针指向的是父环境, 因为是包含当前语句块的Interpreter对象, 而传入的environment是子环境.
+
+# 9 控制流
+
+添加if-else语句
+
+```c
+statement      → exprStmt
+               | ifStmt
+               | printStmt
+               | block ;
+
+ifStmt         → "if" "(" expression ")" statement
+               ( "else" statement )? ;
+```
+
+添加`or`和`and`运算符
+
+```c
+expression     → assignment ;
+assignment     → IDENTIFIER "=" assignment
+               | logic_or ;
+logic_or       → logic_and ( "or" logic_and )* ;
+logic_and      → equality ( "and" equality )* ;
+```

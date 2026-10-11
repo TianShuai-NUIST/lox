@@ -23,6 +23,19 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return expr.value;
   }
 
+  @Override
+  public Object visitLogicalExpr(Expr.Logical expr) {
+    Object left = evaluate(expr.left);
+
+    if(expr.operator.type == TokenType.OR) {
+      if(isTruthy(left)) return left;
+    } else {
+      if(!isTruthy(left)) return left;
+    }
+
+    return evaluate(expr.right);
+  }
+
   // 组合
   // grouping   -> "(" expression ")" ;
   @Override
@@ -131,6 +144,16 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return null;
   }
 
+  @Override
+  public Void visitIfStmt(Stmt.If stmt) {
+    if(isTruthy(evaluate(stmt.condition))){
+      execute(stmt.thenBranch);
+    } else if(stmt.elseBranch != null){
+      execute(stmt.elseBranch);
+    }
+    return null;
+  }
+
   // 打印语句
   // printStmt   -> "print" expression ";" ;
   @Override
@@ -156,6 +179,14 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     /// 调用的是define函数不是assign函数, 二者不同
     /// 使用一个声明语句的时候, 哪怕上级有这个变量, 我们也会使用新的变量, 也就是**屏蔽**
     environment.define(stmt.name.lexeme, value);
+    return null;
+  }
+
+  @Override
+  public Void visitWhileStmt(Stmt.While stmt) {
+    while(isTruthy(evaluate(stmt.condition))) {
+      execute(stmt.body);
+    }
     return null;
   }
 
