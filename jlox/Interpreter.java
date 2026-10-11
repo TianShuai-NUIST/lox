@@ -23,16 +23,20 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return expr.value;
   }
 
+  // 逻辑表达式
   @Override
   public Object visitLogicalExpr(Expr.Logical expr) {
     Object left = evaluate(expr.left);
 
+    // 短路特性
     if(expr.operator.type == TokenType.OR) {
+      /// OR运算符True短路
       if(isTruthy(left)) return left;
     } else {
+      /// AND运算符False短路
       if(!isTruthy(left)) return left;
     }
-
+    /// 没有短路在解析右边
     return evaluate(expr.right);
   }
 
@@ -144,6 +148,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return null;
   }
 
+  // if语句
+  // ifStmt          -> "if" "(" expression ")" statement ( "else" statement)? ;
   @Override
   public Void visitIfStmt(Stmt.If stmt) {
     if(isTruthy(evaluate(stmt.condition))){
@@ -182,6 +188,8 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     return null;
   }
 
+  // while 语句
+  // whileStmt       -> "while" "(" expression ")" statement ;
   @Override
   public Void visitWhileStmt(Stmt.While stmt) {
     while(isTruthy(evaluate(stmt.condition))) {
@@ -191,6 +199,7 @@ class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
   }
 
   // 语句块
+  // block           -> "{" expression* "}" ;
   @Override
   public Void visitBlockStmt(Stmt.Block stmt){
     /// 执行语句, 语句块应该带有当前的上下文, 也就是**环境**

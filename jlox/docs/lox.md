@@ -13,8 +13,13 @@ varDecl         -> "var" IDENTIFIER ( "=" expression )? ";" ;
 // 语句
 statement       -> exprStmt | forStmt | ifStmt |  printStmt | whileStmt | block ;
 
-forStmt -> "for" "(" ( varDecl | exprStmt | ";") expression? ";" expression? ")" statement ;
+// if语句
+ifStmt          -> "if" "(" expression ")" statement ( "else" statement)? ;
 
+// for语句
+forStmt         -> "for" "(" ( varDecl | exprStmt | ";") expression? ";" expression? ")" statement ;
+
+// while语句
 whileStmt       -> "while" "(" expression ")" statement ;
 // 语句块
 block           -> "{" expression* "}" ;

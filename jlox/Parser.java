@@ -7,6 +7,7 @@ import java.util.List;
 import static com.craftinginterpreters.lox.TokenType.*;
 
 // 语法分析器
+/// 把 Scanner 类生成的 Token 流转化为AST抽象语法树
 class Parser {
   // 运行时语法错误
   private static class ParseError extends RuntimeException {};
@@ -27,42 +28,62 @@ class Parser {
 
   // 语句解析
   private Stmt statement() {
+    // For loop
     if(match(FOR)) return forStatement();
+    // if statment
     if(match(IF)) return ifStatement();
     // 打印语句
     if(match(PRINT)) return printStatement();
+    // while loop
     if(match(WHILE)) return whileStatement();
+    // '{'
     if(match(LEFT_BRACE)) return new Stmt.Block(block());
     // 表达式语句
     return expressionStatement();
   }
 
+  /// forStmt -> "for" "(" ( varDecl | exprStmt | ";") expression? ";" expression? ")" statement ;
+  /// **脱糖**, 这里没有独立的实现一个新的语句, 而是把for脱糖成为了while语句.
   private Stmt forStatement(){
-
+    // 消耗'('
     consume(LEFT_PAREN, "Expect '(' after 'for'.");
+    /// 初始化语句 - 第一次循环开始前的执行语句
     Stmt initializer;
     if(match(SEMICOLON)) {
+      // ';' 说明初始化语句是空的
       initializer = null;
     } else if (match(VAR)) {
+      // var 开始说明定义了一个新的变量
       initializer = varDeclaration();
     } else {
+      // 如果没有var开头, 说明这里是一个表达式
+      /// 这是合法的, 因为这个位置的语义就是**首次循环开始之前执行一次**
       initializer = expressionStatement();
     }
+    /// **此处不需要消耗';'** 因为前面当作了**语句**解析, ';'已经被消耗了
 
+    /// 条件语句 - 每次循环执行之前执行的语句
     Expr condition = null;
     if(!check(SEMICOLON)) {
+      // 只要不是';'说明这里有一个条件语句
       condition = expression();
     }
     consume(SEMICOLON, "Expect ';' after loop condition.");
 
+    /// 终止语句 - 每次循环之前执行的语句
     Expr increment = null;
     if(!check(RIGHT_PAREN)) {
+      // 只要不是')'就执行说明这是一个表达式
       increment = expression();
     }
     consume(RIGHT_PAREN, "Expect ')' after for clauses.");
 
+    // 函数体 while 是statement的子类型
     Stmt body = statement();
 
+    /// **倒置处理**
+
+    // push 入 后置语句
     if(increment != null) {
       body = new Stmt.Block(
           Arrays.asList(
@@ -72,9 +93,12 @@ class Parser {
           );
     }
 
+    // 空语句恒为真
     if(condition == null) condition = new Expr.Literal(true);
+    // 实现while类型
     body = new Stmt.While(condition, body);
 
+    // 如果有初始化语句, 那么就作为一个statement语句返回回去
     if(initializer != null) {
       body = new Stmt.Block(Arrays.asList(initializer, body));
     }
@@ -82,11 +106,14 @@ class Parser {
     return body;
   }
 
+  // ifStmt -> "if" "(" expression ")" statement ( "else" statement)? ;
   private Stmt ifStatement(){
+    // if(condition)
     consume(LEFT_PAREN, "Expect '(' after 'if'.");
     Expr condition = expression();
     consume(RIGHT_PAREN, "Expect ')' after if condition.");
 
+    // {thenBranch} else {elseBranch}
     Stmt thenBranch = statement();
     Stmt elseBranch = null;
     if(match(ELSE)){
@@ -96,7 +123,7 @@ class Parser {
     return new Stmt.If(condition, thenBranch, elseBranch);
   }
 
-  // 语句块解析
+  // block -> "{" expression* "}" ;
   private List<Stmt> block(){
     List<Stmt> statements = new ArrayList<>();
 
@@ -135,6 +162,7 @@ class Parser {
     return new Stmt.Var(name, initializer);
   }
 
+  // whileStmt       -> "while" "(" expression ")" statement ;
   private Stmt whileStatement() {
     consume(LEFT_PAREN, "Expect '(' after 'while'.");
     Expr condition = expression();
@@ -174,9 +202,12 @@ class Parser {
     return expr;
   }
 
+  // or运算符
+  // logic_or        -> logic_and ( "or" logic_and )* ;
   private Expr or() {
     Expr expr = and();
 
+    // TODO hyw
     while(match(OR)){
       Token operator = previous();
       Expr right = and();
@@ -186,9 +217,12 @@ class Parser {
     return expr;
   }
 
+  // and 运算符
+  // logic_and       -> equality ( "and" equality )* ;
   private Expr and(){
     Expr expr = equality();
 
+    // TODO hyw
     while(match(AND)) {
       Token operator = previous();
       Expr right = equality();

@@ -7,6 +7,8 @@ import java.util.Map;
 
 import static com.craftinginterpreters.lox.TokenType.*;
 
+// 词法分析器
+/// 把字符串分析为 Token 流
 class Scanner {
   // 原始文本
   private final String source;
