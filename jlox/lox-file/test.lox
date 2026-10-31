@@ -1,0 +1,7 @@
+fun printFun(n){
+  print n;
+}
+
+for(var i = 0; i < 5; i = i + 1){
+  printFun(i);
+}

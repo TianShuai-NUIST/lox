@@ -21,6 +21,7 @@ public class GenerateAst{
     defineAst(outputDir, "Expr", Arrays.asList(
           "Assign   : Token name, Expr value",                // 赋值表达式
           "Binary   : Expr left, Token operator, Expr right", // 二元操作符
+          "Call     : Expr callee, Token paren, List<Expr> arguments",// 函数调用
           "Grouping : Expr expression",                       // 表达式组
           "Literal  : Object value",                          // 字面量
           "Logical  : Expr left, Token operator, Expr right", // 逻辑判断运算符
@@ -32,8 +33,10 @@ public class GenerateAst{
     defineAst(outputDir, "Stmt", Arrays.asList(
           "Block      : List<Stmt> statements",       // 语句块
           "Expression : Expr expression",             // 表达式语句
+          "Function   : Token name, List<Token> params,"  + " List<Stmt> body", // 函数声明
           "If         : Expr condition, Stmt thenBranch," + " Stmt elseBranch",// if 语句
           "Print      : Expr expression",             // 打印语句
+          "Return     : Token keyword, Expr value",// return 语句 返回值
           "Var        : Token name, Expr initializer", // 变量定义语句
           "While      : Expr condition, Stmt body" // while loop
           ));

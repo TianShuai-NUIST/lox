@@ -1,3 +1,5 @@
+# TODO: [10.3](https://github.com/GuoYaxiang/craftinginterpreters_zh/blob/main/content/10.函数.md)
+
 # 4. Scanner
 
 ## 框架
@@ -170,3 +172,19 @@ assignment     → IDENTIFIER "=" assignment
 logic_or       → logic_and ( "or" logic_and )* ;
 logic_and      → equality ( "and" equality )* ;
 ```
+
+# 10 函数
+
+函数被简化成一个后缀运算符, 也就是`(`.
+
+```c
+unary          → ( "!" | "-" ) unary | call ;
+call           → primary ( "(" arguments? ")" )* ;
+```
+另外, 函数内部会有参数需要被提供, 也就是如下的形式.
+
+```c
+arguments      → expression ( "," expression )* ;
+```
+
+
